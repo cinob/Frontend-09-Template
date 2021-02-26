@@ -1,0 +1,68 @@
+<style>
+  div {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: gray;
+    margin-bottom: 10px;
+  }
+</style>
+
+<div id="redCircle"></div>
+<div id="yellowCircle"></div>
+<div id="greenCircle"></div>
+<button id="nextBtn">next</button>
+
+<script>
+function setColor(ele, color) {
+  const lights = document.getElementsByTagName('div')
+  for (let i = 0; i < lights.length; i++) {
+    lights[i].style['background-color'] = 'gray'
+  }
+  ele.style['background-color'] = color
+}
+
+function sleep(time) {
+  return new Promise(resolve => {
+    setTimeout(resolve, time * 1000)
+  })
+}
+
+function happen(ele, eventName) {
+  return new Promise(resolve => {
+    ele.addEventListener(eventName, resolve, {once: true})
+  })
+}
+
+function* go() {
+  while (true) {
+    setColor(greenCircle, 'green')
+    yield sleep(10)
+    setColor(yellowCircle, 'yellow')
+    yield sleep(2)
+    setColor(redCircle, 'red')
+    yield sleep(5)
+  }
+}
+
+function run(iterator) {
+  let {value, done} = iterator.next()
+  if (done)
+    return
+  if (value instanceof Promise)
+    value.then(() => {
+      run(iterator)
+    })
+}
+
+// run(go())
+
+function co(generator) {
+  return function () {
+    return run(generator())
+  }
+}
+
+go = co(go)
+
+</script>
